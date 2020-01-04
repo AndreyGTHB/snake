@@ -14,10 +14,21 @@ let game = {
         "111111111111111"
     ],
     tick: function(){
+        window.clearTimeout(game.timer);
         game.tickNumber++;
-        snake.move();
+        let result = snake.move();
+        if(result == "GAMEOVER"){
+            alert("GAMEOVER");
+            return;
+        }
         graphics.drawGame();
-        game.timer = window.setTimeout("game.tick()", 500)
+        game.timer = window.setTimeout("game.tick()", 500);
+    },
+    isEmpty: function(location){
+        return game.board[location.y][location.x] == ' ';
+    },
+    isWall: function(location){
+        return game.board[location.y][location.x] == '1';
     }
 };
 
@@ -27,12 +38,24 @@ let snake = {
         {x:3, y:2},
         {x:2, y:2},
     ],
-    facing: "E",
+    facing: "R",
     nextLocation: function(){
+        let snakeHead = snake.parts[0];
+        let targetX = snakeHead.x;
+        let targetY = snakeHead.y;
+        targetY = snake.facing == "U" ? targetY - 1 : targetY;
+        targetY = snake.facing == "D" ? targetY + 1 : targetY;
+        targetX = snake.facing == "L" ? targetX - 1 : targetX;
+        targetX = snake.facing == "R" ? targetX + 1 : targetX;
+        return {x: targetX, y: targetY};
     },
     move: function(){
-        let location = snake.nextLocation;
-        snake.parts.unshift(location);
+        let location = snake.nextLocation();
+        if(game.isEmpty(location)) {
+            snake.parts.unshift(location);
+            snake.parts.pop();
+        }
+        if(game.isWall(location)) return "GAMEOVER";
     }
 
 };
@@ -41,6 +64,7 @@ let snake = {
 //Графика
 let graphics = {
     canvas: document.getElementById("canvas"),
+    ctx: canvas.getContext("2d"),
     squareSize: 30,
     drawBoard: function(ctx){
         let currentYOffset = 0;
@@ -66,9 +90,9 @@ let graphics = {
         })
     },
     drawGame: function(){
-        let ctx = graphics.canvas.getContext("2d");
-        graphics.drawBoard(ctx);
-        graphics.drawSnake(ctx);
+        graphics.ctx.clearRect(0, 0, graphics.canvas.width, graphics.canvas.height);
+        graphics.drawBoard(graphics.ctx);
+        graphics.drawSnake(graphics.ctx);
     }
 };
 
@@ -76,7 +100,18 @@ graphics.drawGame();
 
 
 let gameControl = {
+    processInput: function(keyPressed){
+        let key = keyPressed.key.toLowerCase();
+        let targetDirection = snake.facing;
+        if(key == "w") targetDirection = "U";
+        if(key == "a") targetDirection = "L";
+        if(key == "s") targetDirection = "D";
+        if(key == "d") targetDirection = "R";
+        snake.facing = targetDirection;
+        game.tick()
+    },
     startGame: function(){
+        window.addEventListener("keypress", gameControl.processInput, false);
         game.tick();
     }
 };
