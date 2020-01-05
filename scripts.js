@@ -1,4 +1,5 @@
 let game = {
+    score: 0,
     tickNumber: 0,
     timer: null,
     board: [
@@ -33,7 +34,18 @@ let game = {
     },
     fruit: [
         {x: 1, y: 1}
-    ]
+    ],
+    isFruit: function(location){
+        let fruit = null;
+        for(let fruitNumber = 0; fruitNumber < game.fruit.length; fruitNumber ++){
+            fruit = game.fruit[fruitNumber];
+            if(location.x == fruit.x && location.y == fruit.y) {
+                game.fruit.splice(fruitNumber, 1);
+                return true;
+            }
+        }
+        return false;
+    }
 };
 
 let snake = {
@@ -60,6 +72,7 @@ let snake = {
             snake.parts.pop();
         }
         if(game.isWall(location)) return "GAMEOVER";
+        if(game.isFruit(location)) game.score++;
     }
 
 };
@@ -85,9 +98,9 @@ let graphics = {
             currentYOffset += graphics.squareSize;
         });
     },
-    drawSnake: function(ctx){
-        ctx.fillStyle = "green";
-        snake.parts.forEach(function drawPart(part){
+    draw: function(ctx, src, color){
+        ctx.fillStyle = color;
+        src.forEach(function (part){
             let partXLocation = part.x * graphics.squareSize;
             let partYLocation = part.y * graphics.squareSize;
             ctx.fillRect(partXLocation, partYLocation, graphics.squareSize, graphics.squareSize)
@@ -96,7 +109,8 @@ let graphics = {
     drawGame: function(){
         graphics.ctx.clearRect(0, 0, graphics.canvas.width, graphics.canvas.height);
         graphics.drawBoard(graphics.ctx);
-        graphics.drawSnake(graphics.ctx);
+        graphics.draw(graphics.ctx, snake.parts, "green");
+        graphics.draw(graphics.ctx, game.fruit, "red");
     }
 };
 
