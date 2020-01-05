@@ -19,6 +19,7 @@ let game = {
         let result = snake.move();
         if(result == "GAMEOVER"){
             alert("GAMEOVER");
+            gameControl.start = false;
             return;
         }
         graphics.drawGame();
@@ -29,7 +30,10 @@ let game = {
     },
     isWall: function(location){
         return game.board[location.y][location.x] == '1';
-    }
+    },
+    fruit: [
+        {x: 1, y: 1}
+    ]
 };
 
 let snake = {
@@ -100,6 +104,7 @@ graphics.drawGame();
 
 
 let gameControl = {
+    start: true,
     processInput: function(keyPressed){
         let key = keyPressed.key.toLowerCase();
         let targetDirection = snake.facing;
@@ -108,11 +113,14 @@ let gameControl = {
         if(key == "s") targetDirection = "D";
         if(key == "d") targetDirection = "R";
         snake.facing = targetDirection;
-        game.tick()
+        if(gameControl.start) game.tick()
+
     },
     startGame: function(){
-        window.addEventListener("keypress", gameControl.processInput, false);
-        game.tick();
+        if(gameControl.start){
+            window.addEventListener("keypress", gameControl.processInput, false);
+            game.tick();
+        }
     }
 };
 gameControl.startGame();
