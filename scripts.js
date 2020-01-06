@@ -1,18 +1,19 @@
 let game = {
     score: 0,
+    textScore: document.getElementById("score"),
     tickNumber: 0,
     timer: null,
     board: [
-        "111111111111111",
-        "1             1",
-        "1             1",
-        "1    1        1",
-        "1    1111     1",
-        "1    1111     1",
-        "1       1     1",
-        "1             1",
-        "1             1",
-        "111111111111111"
+        "111111111111111111",
+        "1                1",
+        "1                1",
+        "1                1",
+        "1      1111      1",
+        "1      1111      1",
+        "1                1",
+        "1                1",
+        "1                1",
+        "111111111111111111"
     ],
     tick: function(){
         window.clearTimeout(game.timer);
@@ -59,6 +60,13 @@ let game = {
             }
         }
         return false;
+    },
+    isSnake: function(location){
+        for (let snakePart = 0; snakePart < snake.parts.length; snakePart++){
+            let part = snake.parts[snakePart];
+            if(location.x == part.x && location.y == part.y) return true;
+        }
+        return false;
     }
 };
 
@@ -81,12 +89,15 @@ let snake = {
     },
     move: function(){
         let location = snake.nextLocation();
+        if(game.isWall(location) || game.isSnake(location)) return "GAMEOVER";
         if(game.isEmpty(location)) {
             snake.parts.unshift(location);
             if(!game.isFruit(location)) snake.parts.pop();
         }
-        if(game.isWall(location)) return "GAMEOVER";
-        if(game.isFruit(location)) game.score++;
+        if(game.isFruit(location)){
+            game.score++;
+            game.textScore.innerText = game.score;
+        }
     }
 
 };
@@ -123,8 +134,8 @@ let graphics = {
     drawGame: function(){
         graphics.ctx.clearRect(0, 0, graphics.canvas.width, graphics.canvas.height);
         graphics.drawBoard(graphics.ctx);
-        graphics.draw(graphics.ctx, snake.parts, "green");
         graphics.draw(graphics.ctx, game.fruit, "red");
+        graphics.draw(graphics.ctx, snake.parts, "green");
     }
 };
 
@@ -136,10 +147,10 @@ let gameControl = {
     processInput: function(keyPressed){
         let key = keyPressed.key.toLowerCase();
         let targetDirection = snake.facing;
-        if(key == "w") targetDirection = "U";
-        if(key == "a") targetDirection = "L";
-        if(key == "s") targetDirection = "D";
-        if(key == "d") targetDirection = "R";
+        if(key == "w" && snake.facing != "D") targetDirection = "U";
+        if(key == "a" && snake.facing != "R") targetDirection = "L";
+        if(key == "s" && snake.facing != "U") targetDirection = "D";
+        if(key == "d" && snake.facing != "L") targetDirection = "R";
         snake.facing = targetDirection;
         if(gameControl.start) game.tick()
 
