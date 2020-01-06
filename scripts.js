@@ -6,10 +6,10 @@ let game = {
         "111111111111111",
         "1             1",
         "1             1",
-        "1             1",
+        "1    1        1",
         "1    1111     1",
         "1    1111     1",
-        "1             1",
+        "1       1     1",
         "1             1",
         "1             1",
         "111111111111111"
@@ -17,18 +17,32 @@ let game = {
     tick: function(){
         window.clearTimeout(game.timer);
         game.tickNumber++;
+        if(game.tickNumber >= 10){
+            game.addRandomFruit();
+            game.tickNumber = 0;
+        }
         let result = snake.move();
         if(result == "GAMEOVER"){
-            alert("GAMEOVER");
+            alert("GAMEOVER. Restart the page.");
             gameControl.start = false;
             return;
         }
         graphics.drawGame();
-        game.timer = window.setTimeout("game.tick()", 500);
+        game.timer = window.setTimeout("game.tick()", 378);
     },
+    addRandomFruit: function(){
+        let randomY = Math.floor(Math.random() * game.board.length);
+        let randomX = Math.floor(Math.random() * game.board[randomY].length);
+        let randomLocation = {x: randomX, y: randomY};
+        if(game.isEmpty(randomLocation) && !game.isFruit(randomLocation)){
+            game.fruit.push(randomLocation);
+        }
+    },
+
     isEmpty: function(location){
         return game.board[location.y][location.x] == ' ';
     },
+
     isWall: function(location){
         return game.board[location.y][location.x] == '1';
     },
@@ -69,7 +83,7 @@ let snake = {
         let location = snake.nextLocation();
         if(game.isEmpty(location)) {
             snake.parts.unshift(location);
-            snake.parts.pop();
+            if(!game.isFruit(location)) snake.parts.pop();
         }
         if(game.isWall(location)) return "GAMEOVER";
         if(game.isFruit(location)) game.score++;
